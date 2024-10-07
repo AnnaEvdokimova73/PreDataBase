@@ -6,14 +6,17 @@ DataBase::DataBase(QObject *parent)
 
     dataBase = new QSqlDatabase();
     queryModel = new QSqlQueryModel();
+    tableModel = nullptr;
 
 }
 
 DataBase::~DataBase()
 {
     delete queryModel;
-    delete tableModel;
     delete dataBase;
+
+    if (tableModel)
+        delete tableModel;
 }
 
 /*!
@@ -35,7 +38,6 @@ void DataBase::AddDataBase(QString driver, QString nameDB)
  */
 void DataBase::ConnectToDataBase(QVector<QString> data)
 {
-
     dataBase->setHostName(data[hostName]);
     dataBase->setDatabaseName(data[dbName]);
     dataBase->setUserName(data[login]);
@@ -47,7 +49,6 @@ void DataBase::ConnectToDataBase(QVector<QString> data)
     emit sig_SendStatusConnection(status);
 
     tableModel = new QSqlTableModel(nullptr, *dataBase);
-
 }
 
 
@@ -59,6 +60,8 @@ void DataBase::DisconnectFromDataBase(QString nameDb)
 {
     *dataBase = QSqlDatabase::database(nameDb);
     dataBase->close();
+    delete tableModel;
+    tableModel = nullptr;
 
 }
 /*!
@@ -68,7 +71,6 @@ void DataBase::DisconnectFromDataBase(QString nameDb)
  */
 void DataBase::RequestToDB(QString request)
 {
-//    queryModel = new QSqlQueryModel();
     queryModel->setQuery(request, *dataBase);
     queryModel->setHeaderData(0, Qt::Horizontal, tr("Film name"));
     queryModel->setHeaderData(1, Qt::Horizontal, tr("Description"));
@@ -78,7 +80,6 @@ void DataBase::RequestToDB(QString request)
 
 void DataBase::GetTableModel()
 {
-//    tableModel = new QSqlTableModel(nullptr, *dataBase);
     tableModel->setTable("film");
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     tableModel->select();
