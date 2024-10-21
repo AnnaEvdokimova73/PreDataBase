@@ -48,6 +48,9 @@ void DataBase::ConnectToDataBase(QVector<QString> data)
     status = dataBase->open();
     emit sig_SendStatusConnection(status);
 
+    if (tableModel)
+        delete tableModel;
+
     tableModel = new QSqlTableModel(nullptr, *dataBase);
 }
 
